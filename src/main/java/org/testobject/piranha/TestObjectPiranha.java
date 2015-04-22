@@ -18,12 +18,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.testobject.piranha.TestObjectDevice.DeviceContainer;
 
 import com.google.gson.Gson;
@@ -81,7 +76,7 @@ public class TestObjectPiranha {
 	private final String baseUrl;
 
 	private String sessionId;
-	private Server server;
+	private Proxy proxy;
 	private int port;
 
 	public TestObjectPiranha(DesiredCapabilities desiredCapabilities) {
@@ -113,17 +108,17 @@ public class TestObjectPiranha {
 
 	public void startProxyServer(String sessionId) {
 		port = findFreePort();
-		server = new Server(port);
-		ServletContextHandler handler = new ServletContextHandler();
-		handler.setContextPath("");
-		// adds Jersey Servlet with a customized ResourceConfig
-		handler.addServlet(new ServletHolder(new ServletContainer(resourceConfig())), "/*");
-		server.setHandler(handler);
+
+		proxy = new Proxy(port, baseUrl + "piranha", sessionId);
 		try {
-			server.start();
-		} catch (Exception e) {
-			throw new RuntimeException("Could not start the server", e);
+			proxy.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
+	}
+	
+	public String getSessionId() {
+		return sessionId;
 	}
 
 	private static int findFreePort() {
@@ -136,10 +131,6 @@ public class TestObjectPiranha {
 			port = -1;
 		}
 		return port;
-	}
-
-	private ResourceConfig resourceConfig() {
-		return new ResourceConfig().register(new Proxy(baseUrl + "piranha", sessionId));
 	}
 
 	public int getPort() {
@@ -163,7 +154,7 @@ public class TestObjectPiranha {
 		deleteSession();
 
 		try {
-			server.stop();
+			proxy.stop();
 		} catch (Exception e) {
 			// ignored
 		}
@@ -218,18 +209,20 @@ public class TestObjectPiranha {
 
 	public static List<TestObjectDevice> listDevices() {
 		Client client = ClientBuilder.newClient();
-		String descriptors = client.target(TESTOBJECT_BASE_URL + "rest/descriptors").request(MediaType.APPLICATION_JSON)
-				.get(String.class);
+		String descriptors = client.target(TESTOBJECT_BASE_URL + "rest/descriptors")
+				.request(MediaType.APPLICATION_JSON).get(String.class);
 
-		Type typeOf = new TypeToken<List<DeviceContainer>>() {}.getType();
+		Type typeOf = new TypeToken<List<DeviceContainer>>() {
+		}.getType();
 		List<DeviceContainer> deviceList = new Gson().fromJson(descriptors, typeOf);
 
-		String availableDescriptors = client.target(TESTOBJECT_BASE_URL + "rest/descriptors/availableDescriptors").request(MediaType.APPLICATION_JSON)
-				.get(String.class);
-	
-		Type typeOfList = new TypeToken<List<String>>() {}.getType();
+		String availableDescriptors = client.target(TESTOBJECT_BASE_URL + "rest/descriptors/availableDescriptors")
+				.request(MediaType.APPLICATION_JSON).get(String.class);
+
+		Type typeOfList = new TypeToken<List<String>>() {
+		}.getType();
 		List<String> available = new Gson().fromJson(availableDescriptors, typeOfList);
-		
+
 		List<TestObjectDevice> devices = new LinkedList<>();
 		for (DeviceContainer deviceContainer : deviceList) {
 			devices.add(new TestObjectDevice(deviceContainer, available.contains(deviceContainer.id)));
