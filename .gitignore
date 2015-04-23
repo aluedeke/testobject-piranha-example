@@ -10,5 +10,6 @@ rebel.xml
 bin/
 gen/
 node_modules/
+external-libs
 .metadata
 
