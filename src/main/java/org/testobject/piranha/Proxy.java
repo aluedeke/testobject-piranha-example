@@ -1,44 +1,30 @@
 package org.testobject.piranha;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
-@Path("")
-public class Proxy {
+public class Proxy extends NanoHTTPD {
 
 	private final String baseUrl;
 	private final String sessionId;
 
-	public Proxy(String baseUrl, String sessionId) {
+	public Proxy(int port, String baseUrl, String sessionId) {
+		super(port);
 		this.baseUrl = baseUrl;
 		this.sessionId = sessionId;
 	}
-	
-	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	@Produces("application/json-rpc")
-	public String post(String command) {
 
-		
-		//System.out.println("Session id: " + sessionId);
-		//System.out.println("Content: '" + command + "'");
+	@Override
+	public Response serve(IHTTPSession session) {
 
-		Client client = ClientBuilder.newClient();
+		String command = session.readBody();
 
-		String response = client.target(baseUrl)
-				.path("session")
-				.path(sessionId)
+		String response = ClientBuilder.newClient().target(baseUrl).path("session").path(sessionId)
 				.request("application/json-rpc")
 				.post(Entity.entity(command, MediaType.APPLICATION_FORM_URLENCODED), String.class);
 
-		//System.out.println("Response: '" + response + "'");
-
-		return response;
+		return new NanoHTTPD.Response(Response.Status.OK, "application/json-rpc", response);
 	}
+
 }
