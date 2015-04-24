@@ -34,6 +34,8 @@ public class Sample {
 			System.out.println("FW app id: " + frameworkAppId);
 			return;
 		}
+		
+		//String apiKey = TestObjectPiranha.regenerateApiKey("user", "password", "project");
 
 		List<String> devices = getAvailableDevices();
 
