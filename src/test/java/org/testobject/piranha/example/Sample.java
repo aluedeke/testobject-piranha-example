@@ -26,7 +26,7 @@ import com.thoughtworks.selenium.Wait;
 public class Sample {
 
 	static boolean UPLOAD_APP = false;
-
+	
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException {
 		if (UPLOAD_APP == true) {
 			int frameworkAppId = TestObjectPiranha.uploadFrameworkApp("FE51FF78F8AE4729B07D3DDD8F151FBE", new File(
