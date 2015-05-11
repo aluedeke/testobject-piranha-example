@@ -142,7 +142,7 @@ public class Sample {
 		List<String> available = new LinkedList<>();
 
 		for (TestObjectDevice device : TestObjectPiranha.listDevices()) {
-			if (device.isAvailable && device.apiLevel >= 17) {
+			if (device.isAvailable && device.apiLevel >= 17 && device.os == TestObjectDevice.OS.ANDROID) {
 				available.add(device.id);
 			}
 		}
