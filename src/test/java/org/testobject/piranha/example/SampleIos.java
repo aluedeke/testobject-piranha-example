@@ -25,19 +25,22 @@ public class SampleIos {
 
 	public static void main(String[] args) throws JSONException {
 		if (UPLOAD_APP == true) {
-			int frameworkAppId = TestObjectPiranha.uploadFrameworkApp("<YOUR API KEY>", new File(
+			int frameworkAppId = TestObjectPiranha.api().uploadFrameworkApp("<API KEY>", new File(
 					"/home/leonti/development/citrix/ios/iOSAutomationServer-5.0.30-SNAPSHOT-jar-with-dependencies.jar"));
 			System.out.println("FW app id: " + frameworkAppId);
 			return;
 		}
 
 		List<Future<Void>> futures = Lists.newLinkedList();
-		for (String device : getAvailableDevices()) {
-			if (!device.equals("iPhone_3GS_8GB_real")) {
-				futures.add(performTestAsync(device));
-			}
+		for (String device : getAvailableDevices("<API KEY>")) {
+			System.out.println(device);
+//			if (!device.equals("iPhone_3GS_8GB_real")) {
+//				futures.add(performTestAsync(device));
+//			}
 		}
 
+//		futures.add(performTestAsync("iPhone_6_16GB_real_private"));
+		
 		for (Future<Void> future : futures) {
 			try {
 				future.get();
@@ -66,7 +69,7 @@ public class SampleIos {
 		System.out.println("Performing test on " + deviceId);
 
 		DesiredCapabilities capabilities = new DesiredCapabilities();
-		capabilities.setCapability("testobject_api_key", "<YOUR API KEY>");
+		capabilities.setCapability("testobject_api_key", "<API KEY>");
 		capabilities.setCapability("testobject_app_id", "1");
 		capabilities.setCapability("testobject_framework_app_id", "2");
 		capabilities.setCapability("testobject_suite_name", "Piranha test");
@@ -76,6 +79,7 @@ public class SampleIos {
 		TestObjectPiranha testObjectPiranha = null;
 
 		try {
+			//testObjectPiranha = new TestObjectPiranha("http://localhost:7070/", capabilities);
 			testObjectPiranha = new TestObjectPiranha(capabilities);
 
 			int port = testObjectPiranha.getPort();
@@ -98,10 +102,10 @@ public class SampleIos {
 		}
 	}
 
-	private static List<String> getAvailableDevices() {
+	private static List<String> getAvailableDevices(String apiKey) {
 		List<String> available = new LinkedList<>();
 
-		for (TestObjectDevice device : TestObjectPiranha.listDevices()) {
+		for (TestObjectDevice device : TestObjectPiranha.api().listDevices(apiKey)) {
 			if (device.isAvailable && device.os == TestObjectDevice.OS.IOS) {
 				available.add(device.id);
 			}

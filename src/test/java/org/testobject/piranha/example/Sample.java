@@ -29,7 +29,7 @@ public class Sample {
 	
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException {
 		if (UPLOAD_APP == true) {
-			int frameworkAppId = TestObjectPiranha.uploadFrameworkApp("FE51FF78F8AE4729B07D3DDD8F151FBE", new File(
+			int frameworkAppId = TestObjectPiranha.api().uploadFrameworkApp("<API KEY>", new File(
 					"/home/leonti/Downloads/AndroidPiranhaServer_1.0.apk"));
 			System.out.println("FW app id: " + frameworkAppId);
 			return;
@@ -37,13 +37,15 @@ public class Sample {
 		
 		//String apiKey = TestObjectPiranha.regenerateApiKey("user", "password", "project");
 
-		List<String> devices = getAvailableDevices();
+//		List<String> devices = getAvailableDevices("73847C70F0974000B4E3F691EBC98814");
+//
+//		Future<Void> first = performTestAsync(devices.get(0));
+//		Future<Void> second = performTestAsync(devices.get(1));
 
-		Future<Void> first = performTestAsync(devices.get(0));
-		Future<Void> second = performTestAsync(devices.get(1));
-
-		first.get();
-		second.get();
+		//first.get();
+		//second.get();
+		
+		performTest("Samsung_Galaxy_Note_3_real_private");
 	}
 
 	private static Future<Void> performTestAsync(final String deviceId) {
@@ -63,7 +65,7 @@ public class Sample {
 		System.out.println("Performing test on " + deviceId);
 
 		DesiredCapabilities capabilities = new DesiredCapabilities();
-		capabilities.setCapability("testobject_api_key", "<YOUR KEY>");
+		capabilities.setCapability("testobject_api_key", "<API KEY>");
 		capabilities.setCapability("testobject_app_id", "1");
 		capabilities.setCapability("testobject_framework_app_id", "2");
 		capabilities.setCapability("testobject_device", deviceId);
@@ -138,10 +140,10 @@ public class Sample {
 		}
 	}
 
-	private static List<String> getAvailableDevices() {
+	private static List<String> getAvailableDevices(String apiKey) {
 		List<String> available = new LinkedList<>();
 
-		for (TestObjectDevice device : TestObjectPiranha.listDevices()) {
+		for (TestObjectDevice device : TestObjectPiranha.api().listDevices(apiKey)) {
 			if (device.isAvailable && device.apiLevel >= 17 && device.os == TestObjectDevice.OS.ANDROID) {
 				available.add(device.id);
 			}
